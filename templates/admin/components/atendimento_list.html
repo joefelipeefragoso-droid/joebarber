@@ -1,0 +1,127 @@
+<div class="app-card">
+    <h5 class="section-title border-bottom pb-3 mb-3">Últimas Movimentações</h5>
+
+    <div class="table-responsive">
+        <table class="table table-borderless table-hover align-middle mb-0">
+            <thead class="text-secondary small text-uppercase bg-light rounded">
+                <tr>
+                    <th class="py-3 pl-3" style="border-top-left-radius: 10px; border-bottom-left-radius: 10px;">Cliente
+                    </th>
+                    <th class="py-3">Serviços / Produtos</th>
+                    <th class="py-3">Barbeiro</th>
+                    <th class="py-3">Pagamento</th>
+                    <th class="py-3 text-right">Valor</th>
+                    <th class="py-3 text-center pr-3"
+                        style="border-top-right-radius: 10px; border-bottom-right-radius: 10px;">Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for sale in recent_sales %}
+                <tr>
+                    <!-- Cliente -->
+                    <td class="pl-3 font-weight-bold text-dark">
+                        <div class="d-flex align-items-center">
+                            <div class="bg-light text-primary rounded-circle mr-3 d-flex align-items-center justify-content-center"
+                                style="width: 35px; height: 35px;">
+                                <i class="fas fa-user-circle"></i>
+                            </div>
+                            <div class="d-flex flex-column">
+                                <span>{{ sale.client_name or 'Não Identificado' }}</span>
+                                <span class="text-muted small" style="font-size: 0.75rem; font-weight: normal;">
+                                    {{ sale.date.strftime('%H:%M') }}
+                                </span>
+                            </div>
+                        </div>
+                    </td>
+
+                    <!-- Serviços e Produtos -->
+                    <td>
+                        <div class="d-flex flex-wrap gap-1">
+                            {% for item in sale.items %}
+                            <span class="badge badge-light border"
+                                style="font-weight: 500; font-size: 0.8rem; margin-right: 4px; margin-bottom: 2px;">
+                                {{ item.item_name }}
+                            </span>
+                            {% else %}
+                            <span class="text-muted small">-</span>
+                            {% endfor %}
+                        </div>
+                    </td>
+
+                    <!-- Barbeiro -->
+                    <td class="text-secondary">
+                        <i class="fas fa-cut text-muted mr-1" style="font-size: 0.8rem;"></i>
+                        {{ sale.collaborator.name }}
+                    </td>
+
+                    <!-- Pagamento -->
+                    <td>
+                        <span class="badge badge-light text-dark border px-3 py-2 rounded-pill mb-0"
+                            style="font-weight: 500;">
+                            {{ sale.payment_method }}
+                        </span>
+                    </td>
+
+                    <!-- Valor -->
+                    <td class="text-right font-weight-bold text-success">
+                        + R$ {{ "%.2f"|format(sale.total_amount) }}
+                    </td>
+                    <!-- Ações -->
+                    <td class="text-center pr-3">
+                        <button type="button" class="btn btn-sm btn-outline-danger border-0" title="Excluir Atendimento"
+                            data-toggle="modal" data-target="#deleteModal"
+                            onclick="setDeleteAction('{{ url_for('dashboard.delete_sale', id=sale.id) }}')">
+                            <i class="fas fa-trash-alt"></i>
+                        </button>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="6" class="text-center text-muted py-4">Nenhuma movimentação registrada.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+</div>
+
+<!-- Modal de Confirmação de Exclusão -->
+<div class="modal fade" id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title" id="deleteModalLabel">Confirmar Exclusão</h5>
+                <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body text-center py-4">
+                <div class="text-danger mb-3">
+                    <i class="fas fa-exclamation-triangle fa-3x"></i>
+                </div>
+                <p class="font-weight-bold lead mb-2">Tem certeza que deseja excluir?</p>
+                <p class="text-muted text-small mb-4">Esta ação irá remover o registro e atualizar os caixas de ambos
+                    (Admin e Colaborador). <br><strong>Esta ação não pode ser desfeita.</strong></p>
+
+                <form id="deleteForm" method="POST" action="">
+                    <button type="button" class="btn btn-secondary mr-2" data-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-danger font-weight-bold">Sim, Excluir</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function setDeleteAction(url) {
+        var form = document.getElementById('deleteForm');
+        if (form) {
+            form.action = url;
+            console.log("Delete action set to:", url);
+        } else {
+            console.error("Delete form not found");
+        }
+    }
+</script>

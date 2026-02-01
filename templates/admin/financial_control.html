@@ -1,0 +1,170 @@
+{% extends 'admin/master.html' %}
+
+{% block head %}
+{{ super() }}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+<style>
+    .method-card {
+        cursor: pointer;
+        transition: transform 0.2s;
+    }
+
+    .method-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 .5rem 1rem rgba(0, 0, 0, .15) !important;
+    }
+
+    .bg-money {
+        background-color: #28a745;
+        color: white;
+    }
+
+    .bg-pix {
+        background-color: #17a2b8;
+        color: white;
+    }
+
+    .bg-debit {
+        background-color: #ffc107;
+        color: black;
+    }
+
+    .bg-credit {
+        background-color: #007bff;
+        color: white;
+    }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="container-fluid mt-4">
+    <h1 class="h3 mb-4 text-gray-800">Controle Financeiro</h1>
+
+    <!-- Daily Control Section -->
+    <h4 class="mb-3">Controle Diário (Por Forma de Pagamento)</h4>
+    <div class="row">
+        <!-- Loop through methods -->
+        {% for method, data in daily_control.items() %}
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card h-100 shadow-sm method-card" data-toggle="modal" data-target="#modal{{ method }}">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div
+                                class="text-xs font-weight-bold text-uppercase mb-1 {{ 'text-success' if method == 'Dinheiro' else 'text-info' if method == 'Pix' else 'text-warning' if method == 'Débito' else 'text-primary' }}">
+                                {{ method }}
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">R$ {{ "%.2f"|format(data.total) }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-wallet fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                    <small class="text-muted mt-2 d-block">Clique para detalhes</small>
+                </div>
+            </div>
+
+            <!-- Modal for Breakdown -->
+            <div class="modal fade" id="modal{{ method }}" tabindex="-1" role="dialog"
+                aria-labelledby="modalLabel{{ method }}" aria-hidden="true">
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="modalLabel{{ method }}">Detalhes: {{ method }} (Hoje)</h5>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <div class="modal-body">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Colaborador</th>
+                                        <th class="text-right">Valor</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for item in data.breakdown %}
+                                    <tr>
+                                        <td>{{ item.name }}</td>
+                                        <td class="text-right">R$ {{ "%.2f"|format(item.amount) }}</td>
+                                    </tr>
+                                    {% else %}
+                                    <tr>
+                                        <td colspan="2" class="text-center text-muted">Nenhum recebimento registrado.
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <hr class="my-5">
+
+    <!-- Weekly Money Control -->
+    <h4 class="mb-3 text-success">Controle Semanal (Dinheiro em Caixa)</h4>
+    <div class="row">
+        <div class="col-md-6 mb-4">
+            <div class="card border-left-success shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Total Dinheiro (7
+                                Dias)</div>
+                            <div class="h3 mb-0 font-weight-bold text-gray-800">R$ {{ "%.2f"|format(weekly_money_total)
+                                }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-money-bill-wave fa-3x text-green-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 mb-4">
+            <div class="card shadow">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-success">Detalhamento por Colaborador (Dinheiro Semanal)</h6>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-bordered" width="100%" cellspacing="0">
+                            <thead>
+                                <tr>
+                                    <th>Colaborador</th>
+                                    <th>Total Dinheiro</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in weekly_money_breakdown %}
+                                <tr>
+                                    <td>{{ item.name }}</td>
+                                    <td class="text-success font-weight-bold">R$ {{ "%.2f"|format(item.amount) }}</td>
+                                </tr>
+                                {% else %}
+                                <tr>
+                                    <td colspan="2" class="text-center text-muted">Nenhum valor em dinheiro registrado
+                                        na semana.</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<!-- Bootstrap JS -->
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
+{% endblock %}

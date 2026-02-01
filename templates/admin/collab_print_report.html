@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Comprovante - {{ payment.collaborator.name }}</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            padding: 20px;
+        }
+
+        .receipt-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px;
+            border-radius: 8px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 20px;
+        }
+
+        .logo {
+            width: 80px;
+            height: auto;
+            border-radius: 50%;
+            margin-bottom: 10px;
+        }
+
+        .table th {
+            border-top: none;
+        }
+
+        @media print {
+            body {
+                background: #fff;
+                padding: 0;
+            }
+
+            .receipt-container {
+                box-shadow: none;
+                border: none;
+                padding: 0;
+            }
+
+            .no-print {
+                display: none;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="receipt-container">
+        <div class="header">
+            <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Logo" class="logo">
+            <h3>Comprovante de Comissão</h3>
+            <h5 class="text-muted">{{ payment.collaborator.name }}</h5>
+        </div>
+
+        <div class="row">
+            <div class="col-6">
+                <strong>Período:</strong><br>
+                {{ payment.start_date.strftime('%d/%m/%Y') }} a {{ payment.end_date.strftime('%d/%m/%Y') }}
+            </div>
+            <div class="col-6 text-right">
+                <strong>Emitido em:</strong><br>
+                {{ payment.date.strftime('%d/%m/%Y') }}
+            </div>
+        </div>
+        <hr>
+
+        <table class="table table-striped mt-3">
+            <thead>
+                <tr>
+                    <th>Data</th>
+                    <th>Descrição</th>
+                    <th class="text-right">Comissão</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% set ns = namespace(total_items=0, total_services=0, total_products=0) %}
+                {% for sale in payment.sales %}
+                {% for item in sale.items %}
+                {% set ns.total_items = ns.total_items + 1 %}
+                {% if item.product_id %}
+                {% set ns.total_products = ns.total_products + 1 %}
+                {% else %}
+                {% set ns.total_services = ns.total_services + 1 %}
+                {% endif %}
+                <tr>
+                    <td>{{ sale.date.strftime('%d/%m') }}</td>
+                    <td>
+                        {{ item.item_name }}
+                        {% if item.product_id %}
+                        <span class="badge badge-secondary" style="font-size:0.6em">PROD</span>
+                        {% endif %}
+                    </td>
+                    <td class="text-right">R$ {{ "%.2f"|format(item.commission) }}</td>
+                </tr>
+                {% endfor %}
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <!-- Discounts Section -->
+        {% if payment.advances %}
+        <h6 class="mt-4 mb-2 text-muted text-uppercase small font-weight-bold">Descontos (Vales / Permutas)</h6>
+        <table class="table table-sm table-borderless bg-light">
+            <thead>
+                <tr class="text-muted small">
+                    <th>Data</th>
+                    <th>Descrição</th>
+                    <th class="text-right">Valor</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for adv in payment.advances %}
+                <tr>
+                    <td>{{ adv.date.strftime('%d/%m') }}</td>
+                    <td>{{ adv.description }}</td>
+                    <td class="text-right text-danger">- R$ {{ "%.2f"|format(adv.amount) }}</td>
+                </tr>
+                {% endfor %}
+                <tr class="border-top">
+                    <td colspan="2" class="text-right font-weight-bold small">Total Descontos</td>
+                    <td class="text-right font-weight-bold text-danger">- R$ {{ "%.2f"|format(payment.total_advances) }}
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+        {% endif %}
+
+        <div class="row mt-4">
+            <div class="col-6">
+                <p class="small text-muted">
+                    Resumo:<br>
+                    {{ ns.total_services }} Serviços<br>
+                    {{ ns.total_products }} Produtos
+                </p>
+            </div>
+            <div class="col-6 text-right">
+                <h5>Total Comissões: R$ {{ "%.2f"|format(payment.total_commission) }}</h5>
+                {% if payment.total_advances > 0 %}
+                <p class="text-danger">(-) Vales: R$ {{ "%.2f"|format(payment.total_advances) }}</p>
+                {% endif %}
+                <h3 class="text-success" style="border-top: 2px solid #eee; padding-top: 10px;">
+                    Líquido: R$ {{ "%.2f"|format(payment.net_amount) }}
+                </h3>
+            </div>
+        </div>
+
+        <div class="text-center mt-5 no-print">
+            <button onclick="window.print()" class="btn btn-primary btn-lg"><i class="fas fa-print"></i> Imprimir /
+                Salvar PDF</button>
+            <button onclick="window.close()" class="btn btn-secondary btn-lg">Fechar</button>
+        </div>
+    </div>
+</body>
+
+</html>

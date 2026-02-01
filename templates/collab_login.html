@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="row justify-content-center mt-5">
+    <div class="col-md-6 col-lg-4">
+        <div class="card shadow">
+            <div class="card-header bg-primary text-white text-center">
+                <h4>Acesso do Colaborador</h4>
+            </div>
+            <div class="card-body">
+                <p class="text-center">Olá, <strong class="text-primary">{{ collaborator.name }}</strong></p>
+                <p class="text-center text-muted small">Confirme sua senha para continuar.</p>
+
+                <form method="POST">
+                    <div class="form-group">
+                        <label for="password">Senha de Acesso</label>
+                        <input type="password" class="form-control form-control-lg" id="password" name="password"
+                            required autofocus placeholder="Digite sua senha">
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-block btn-lg mt-4">Entrar <i
+                            class="fas fa-sign-in-alt"></i></button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

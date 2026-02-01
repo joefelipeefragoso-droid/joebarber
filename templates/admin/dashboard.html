@@ -1,0 +1,315 @@
+{% extends 'admin/master.html' %}
+
+{% block page_title %}Visão Geral{% endblock %}
+
+{% block body %}
+<!-- Row 1: Summary Cards (4 Columns) -->
+<div class="row mb-4">
+    <!-- Card 1: Faturamento Total -->
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="app-card h-100 d-flex flex-column justify-content-between">
+            <span class="text-secondary small font-weight-bold text-uppercase">Faturamento Total</span>
+            <div class="h3 font-weight-bold text-dark mt-2 mb-0">R$ {{ "%.2f"|format(total_revenue) }}</div>
+        </div>
+    </div>
+
+    <!-- Card 2: Sala VIP -->
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="app-card h-100 d-flex flex-column justify-content-between">
+            <span class="text-secondary small font-weight-bold text-uppercase">Sala VIP (Dono)</span>
+            <div class="h3 font-weight-bold text-success mt-2 mb-0">R$ {{ "%.2f"|format(vip_revenue) }}</div>
+        </div>
+    </div>
+
+    <!-- Card 3: Equipe -->
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="app-card h-100 d-flex flex-column justify-content-between">
+            <span class="text-secondary small font-weight-bold text-uppercase">Equipe</span>
+            <div class="h3 font-weight-bold text-info mt-2 mb-0">R$ {{ "%.2f"|format(team_revenue) }}</div>
+        </div>
+    </div>
+
+    <!-- Card 4: Lucro Líquido -->
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="app-card app-card-primary h-100 d-flex flex-column justify-content-between">
+            <span class="text-white-50 small font-weight-bold text-uppercase">Lucro Líquido</span>
+            <div class="h3 font-weight-bold text-white mt-2 mb-0">R$ {{ "%.2f"|format(net_profit) }}</div>
+        </div>
+    </div>
+</div>
+
+<!-- Row 2: Financial Actions (4 Columns) -->
+<div class="row mb-3">
+    <!-- Card 1: Fornecedores (NEW) -->
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="app-card h-100">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <span class="text-secondary small font-weight-bold text-uppercase d-block">Dívida
+                        Fornecedores</span>
+                    <span class="h5 font-weight-bold text-danger">R$ {{ "%.2f"|format(total_supplier_debt) }}</span>
+                </div>
+                <div class="icon-circle bg-light text-dark p-3 rounded-circle">
+                    <i class="fas fa-truck-loading"></i>
+                </div>
+            </div>
+            <a href="{{ url_for('supplier.index_view') }}"
+                class="btn btn-sm btn-outline-dark btn-block mt-3 rounded-pill">Gerenciar</a>
+        </div>
+    </div>
+
+    <!-- Card 2: Despesas -->
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="app-card h-100">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <span class="text-secondary small font-weight-bold text-uppercase d-block">Despesas</span>
+                    <span class="h4 font-weight-bold text-danger">R$ {{ "%.0f"|format(total_expenses) }}</span>
+                </div>
+                <div class="icon-circle bg-light text-danger p-3 rounded-circle">
+                    <i class="fas fa-arrow-down"></i>
+                </div>
+            </div>
+            <a href="{{ url_for('expense.create_view') }}"
+                class="btn btn-sm btn-outline-danger btn-block mt-3 rounded-pill">Lançar</a>
+        </div>
+    </div>
+
+    <!-- Card 3: Vales -->
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="app-card h-100">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <span class="text-secondary small font-weight-bold text-uppercase d-block">Vales</span>
+                    <span class="h5 font-weight-bold text-dark">Adiantar</span>
+                </div>
+                <div class="icon-circle bg-light text-warning p-3 rounded-circle">
+                    <i class="fas fa-hand-holding-usd"></i>
+                </div>
+            </div>
+            <a href="{{ url_for('cashadvance.create_view') }}"
+                class="btn btn-sm btn-outline-warning btn-block mt-3 rounded-pill">Gerar Vale</a>
+        </div>
+    </div>
+
+    <!-- Card 4: Gerar Notas -->
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="app-card h-100">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <span class="text-secondary small font-weight-bold text-uppercase d-block">Pagamentos</span>
+                    <span class="h5 font-weight-bold text-dark">Notas</span>
+                </div>
+                <div class="icon-circle bg-light text-success p-3 rounded-circle">
+                    <i class="fas fa-receipt"></i>
+                </div>
+            </div>
+            <a href="{{ url_for('payments.index') }}"
+                class="btn btn-sm btn-outline-success btn-block mt-3 rounded-pill">Gerar Notas</a>
+        </div>
+    </div>
+</div>
+
+<!-- Row 2.1: Operational Actions (2 Columns) -->
+<div class="row mb-4">
+    <!-- Card 4: Serviços -->
+    <div class="col-md-6 mb-3">
+        <div class="app-card h-100">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <span class="text-secondary small font-weight-bold text-uppercase d-block">Serviços</span>
+                    <span class="h4 font-weight-bold text-dark">{{ total_services }}</span>
+                </div>
+                <div class="icon-circle bg-light text-primary p-3 rounded-circle">
+                    <i class="fas fa-cut"></i>
+                </div>
+            </div>
+            <a href="{{ url_for('service.index_view') }}"
+                class="btn btn-sm btn-outline-primary btn-block mt-3 rounded-pill">Gerenciar</a>
+        </div>
+    </div>
+
+    <!-- Card 5: Produtos -->
+    <div class="col-md-6 mb-3">
+        <div class="app-card h-100">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <span class="text-secondary small font-weight-bold text-uppercase d-block">Estoque</span>
+                    <span class="h5 font-weight-bold text-dark">Produtos</span>
+                </div>
+                <div class="icon-circle bg-light text-info p-3 rounded-circle">
+                    <i class="fas fa-box"></i>
+                </div>
+            </div>
+            <a href="{{ url_for('product.index_view') }}"
+                class="btn btn-sm btn-outline-info btn-block mt-3 rounded-pill">Gerenciar</a>
+        </div>
+    </div>
+</div>
+
+<!-- Row 2.5: Graphic Analysis (Chart) -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="app-card">
+            <h5 class="section-title mb-3">Gráfico de Receita (7 Dias)</h5>
+            <div style="height: 300px; width: 100%;">
+                <canvas id="revenueChart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Row 2.7: Last 7 Days Summary -->
+<div class="row mb-4">
+    <div class="col-12">
+        <h5 class="section-title mb-3">Resumo Financeiro (Últimos 7 Dias)</h5>
+    </div>
+    <div class="col-md-4 mb-3">
+        <div class="app-card text-center p-3">
+            <small class="text-uppercase text-secondary font-weight-bold">Receita</small>
+            <div class="h4 font-weight-bold text-success mt-2 mb-0">R$ {{ "%.2f"|format(report_7_days.receita) }}</div>
+        </div>
+    </div>
+    <div class="col-md-4 mb-3">
+        <div class="app-card text-center p-3">
+            <small class="text-uppercase text-secondary font-weight-bold">Despesas</small>
+            <div class="h4 font-weight-bold text-danger mt-2 mb-0">R$ {{ "%.2f"|format(report_7_days.despesa) }}</div>
+        </div>
+    </div>
+    <div class="col-md-4 mb-3">
+        <div class="app-card text-center p-3">
+            <small class="text-uppercase text-secondary font-weight-bold">Lucro</small>
+            <div
+                class="h4 font-weight-bold {{ 'text-success' if report_7_days.lucro >= 0 else 'text-danger' }} mt-2 mb-0">
+                R$ {{ "%.2f"|format(report_7_days.lucro) }}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Row 2.8: Monthly Financial Report -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="app-card">
+            <h5 class="section-title mb-3">Relatório Financeiro Mensal</h5>
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="text-secondary small text-uppercase bg-light rounded">
+                        <tr>
+                            <th class="py-3 pl-3">Mês/Ano</th>
+                            <th class="py-3 text-success">Receita</th>
+                            <th class="py-3 text-danger">Despesa</th>
+                            <th class="py-3 text-right pr-3 font-weight-bold">Lucro</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for mes, dados in monthly_report.items() %}
+                        <tr>
+                            <td class="pl-3 font-weight-bold text-dark">{{ mes }}</td>
+                            <td class="text-success">+ R$ {{ "%.2f"|format(dados.receita) }}</td>
+                            <td class="text-danger">- R$ {{ "%.2f"|format(dados.despesa) }}</td>
+                            <td
+                                class="text-right pr-3 font-weight-bold {{ 'text-success' if dados.lucro >= 0 else 'text-danger' }}">
+                                R$ {{ "%.2f"|format(dados.lucro) }}
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="4" class="text-center text-muted py-4">Nenhum dado financeiro disponível.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        var ctx = document.getElementById('revenueChart').getContext('2d');
+
+        // Fintech Gradient for the chart
+        var gradient = ctx.createLinearGradient(0, 0, 0, 400);
+        gradient.addColorStop(0, 'rgba(5, 150, 105, 0.2)'); // Primary Green Low Opacity
+        gradient.addColorStop(1, 'rgba(5, 150, 105, 0)');
+
+        var chart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: {{ daily_labels| tojson }},
+        datasets: [{
+            label: 'Faturamento',
+            data: {{ daily_values| tojson }},
+        borderColor: '#059669', // Primary Green
+        backgroundColor: gradient,
+        borderWidth: 2,
+        pointBackgroundColor: '#ffffff',
+        pointBorderColor: '#059669',
+        pointBorderWidth: 2,
+        pointRadius: 4,
+        pointHoverRadius: 6,
+        fill: true,
+        tension: 0.4
+                }]
+            },
+        options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: { display: false },
+            tooltip: {
+                backgroundColor: '#1e293b',
+                titleColor: '#fff',
+                bodyColor: '#fff',
+                displayColors: false,
+                padding: 10,
+                cornerRadius: 8
+            }
+        },
+        scales: {
+            x: {
+                grid: { display: false },
+                ticks: { color: '#64748b', font: { family: 'Poppins' } }
+            },
+            y: {
+                border: { display: false },
+                grid: { color: '#f1f5f9', borderDash: [5, 5] },
+                ticks: {
+                    color: '#64748b',
+                    font: { family: 'Poppins' },
+                    callback: function (value) { return 'R$ ' + value; }
+                }
+            }
+        }
+    }
+        });
+    });
+</script>
+
+<!-- Row 3: Recent List (Wide Card) -->
+<div class="row">
+    <div class="col-12">
+        {% include 'admin/components/atendimento_list.html' %}
+    </div>
+</div>
+
+<style>
+    /* Inline tweak to ensure cards match height nicely in grid */
+    .app-card {
+        border: 1px solid rgba(0, 0, 0, 0.05);
+        /* Subtle border for definition */
+    }
+
+    .table td {
+        vertical-align: middle;
+        padding-top: 15px;
+        padding-bottom: 15px;
+        border-bottom: 1px solid #f8f9fa;
+    }
+
+    .table tr:last-child td {
+        border-bottom: none;
+    }
+</style>
+{% endblock %}

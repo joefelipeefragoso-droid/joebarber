@@ -1,0 +1,128 @@
+{% extends 'admin/base.html' %}
+
+{% block head_css %}
+{{ super() }}
+<!-- Favicon & PWA -->
+<link rel="icon" href="{{ url_for('static', filename='img/logo.png') }}" type="image/png">
+<link rel="shortcut icon" href="{{ url_for('static', filename='img/logo.png') }}" type="image/png">
+<link rel="apple-touch-icon" sizes="180x180" href="{{ url_for('static', filename='img/logo.png') }}">
+<link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
+
+<!-- Fonts & Icons -->
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<!-- Custom Fintech Theme -->
+<link rel="stylesheet" href="{{ url_for('static', filename='css/fintech.css') }}">
+<style>
+    /* Enhancements to override Bootstrap defaults injected by Base */
+    body {
+        padding-top: 0 !important;
+        background-color: #f3f4f6 !important;
+    }
+
+    .navbar {
+        display: none !important;
+    }
+
+    .container {
+        width: 100% !important;
+        max-width: 100% !important;
+        padding: 0 !important;
+    }
+
+    /* Fix Alert Styles */
+    .alert {
+        border-radius: 12px;
+        border: none;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+    }
+</style>
+{% endblock %}
+
+{% block main_menu %}
+<!-- OVERRIDE: Empty block to remove default Navbar -->
+{% endblock %}
+
+{% block menu_links %}
+<!-- OVERRIDE: Empty block -->
+{% endblock %}
+
+{% block access_control %}
+<!-- OVERRIDE: Empty block -->
+{% endblock %}
+
+{% block brand_node %}
+<!-- OVERRIDE: Empty block -->
+{% endblock %}
+
+{% block page_body %}
+<!-- Global App Wrapper -->
+<div class="app-layout">
+
+    <!-- Fixed Header -->
+    <div class="app-header">
+        <div class="header-left">
+            <div class="app-title">
+                <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Logo"
+                    style="width: 50px; height: 50px; border-radius: 50%; margin-right: 10px;">
+                {% block page_title %}{{ admin_view.name if admin_view else 'Barbearia JoeFelipe' }}{% endblock %}
+            </div>
+        </div>
+        <div class="header-right">
+            <a href="#" class="header-icon"><i class="far fa-bell"></i></a>
+        </div>
+    </div>
+
+    <!-- Content -->
+    <div class="app-content-wrapper" style="padding: 20px; padding-bottom: 100px;">
+        <!-- Flash Messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        {% for category, message in messages %}
+        <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show"
+            role="alert">
+            {{ message }}
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+        {% endfor %}
+        {% endif %}
+        {% endwith %}
+
+        <!-- The specific page content (Dashboard, List, etc.) goes here -->
+        {% block body %}{% endblock %}
+    </div>
+
+    <!-- Bottom Nav -->
+    <div class="bottom-nav">
+        <a href="{{ url_for('dashboard.index') }}"
+            class="nav-item text-decoration-none {{ 'active' if request.endpoint == 'dashboard.index' else '' }}">
+            <i class="fas fa-home"></i>
+            <span>Início</span>
+        </a>
+        <a href="{{ url_for('financial.index') }}"
+            class="nav-item text-decoration-none {{ 'active' if request.endpoint == 'financial.index' else '' }}">
+            <i class="fas fa-wallet"></i>
+            <span>Finanças</span>
+        </a>
+        <a href="{{ url_for('vip.index') }}"
+            class="nav-item text-decoration-none {{ 'active' if request.endpoint == 'vip.index' else '' }}">
+            <i class="fas fa-crown"></i>
+            <span>VIP</span>
+        </a>
+        <a href="{{ url_for('collaborator.index_view') }}"
+            class="nav-item text-decoration-none {{ 'active' if request.endpoint == 'collaborator.index_view' else '' }}">
+            <i class="fas fa-users"></i>
+            <span>Equipe</span>
+        </a>
+    </div>
+</div>
+{% endblock %}
+
+{% block tail_js %}
+{{ super() }}
+<!-- Additional JS if needed -->
+{% endblock %}

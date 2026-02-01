@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Nota de Pagamento - {{ payment.collaborator.name }}</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <style>
+        body {
+            background: #f8f9fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            -webkit-print-color-adjust: exact;
+        }
+
+        .receipt-container {
+            max-width: 850px;
+            margin: 40px auto;
+            background: #fff;
+            padding: 40px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.05);
+            border-radius: 8px;
+        }
+
+        .header-brand {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .header-sub {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .info-box {
+            background: #f8f9fa;
+            border-radius: 6px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+
+        .table-custom th {
+            background: #f1f3f5;
+            font-weight: 600;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            border-top: none;
+        }
+
+        .table-custom td {
+            vertical-align: middle;
+            font-size: 0.9rem;
+        }
+
+        .badge-prod {
+            font-size: 0.7em;
+            background-color: #6c757d;
+            color: white;
+            padding: 2px 6px;
+            border-radius: 10px;
+        }
+
+        .watermark {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate(-45deg);
+            font-size: 6rem;
+            opacity: 0.05;
+            font-weight: bold;
+            color: #000;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        @media print {
+            body {
+                background: #fff;
+                padding: 0;
+            }
+
+            .receipt-container {
+                box-shadow: none;
+                margin: 0;
+                max-width: 100%;
+                border-radius: 0;
+                padding: 20px;
+            }
+
+            .btn-print,
+            .no-print {
+                display: none !important;
+            }
+
+            .badge-primary {
+                color: #fff !important;
+                background-color: #007bff !important;
+            }
+
+            .badge-success {
+                color: #fff !important;
+                background-color: #28a745 !important;
+            }
+
+            .text-success {
+                color: #28a745 !important;
+            }
+
+            .text-danger {
+                color: #dc3545 !important;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="receipt-container position-relative">
+        <div class="watermark">
+            {% if mode == 'admin' %}RELATÓRIO FINANCEIRO{% else %}COMPROVANTE{% endif %}
+        </div>
+
+        <!-- Header -->
+        <div class="row mb-4 border-bottom pb-3 align-items-center position-relative" style="z-index: 1;">
+            <div class="col-8">
+                <div class="header-brand"><i class="fas fa-cut mr-2"></i> Barbearia JoeFelipe</div>
+                <div class="header-sub">
+                    {% if mode == 'admin' %}
+                    Relatório Financeiro do Colaborador (Admin)
+                    {% else %}
+                    Comprovante de Pagamento de Comissão
+                    {% endif %}
+                </div>
+            </div>
+            <div class="col-4 text-right">
+                <span class="badge badge-dark px-3 py-2" style="font-size: 0.9rem;">Nota #{{ "%04d"|format(payment.id)
+                    }}</span>
+            </div>
+        </div>
+
+        <!-- Info Grid -->
+        <div class="row mb-2 position-relative" style="z-index: 1;">
+            <div class="col-md-6">
+                <div class="info-box">
+                    <small class="text-uppercase text-muted font-weight-bold">Colaborador</small>
+                    <div class="h5 mb-0 text-dark">{{ payment.collaborator.name }}</div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="info-box">
+                    <small class="text-uppercase text-muted font-weight-bold">Período de Referência</small>
+                    <div class="h5 mb-0 text-dark">
+                        {% if payment.start_date %}
+                        {{ payment.start_date.strftime('%d/%m/%Y') }} a {{ payment.end_date.strftime('%d/%m/%Y') }}
+                        {% else %}
+                        Até {{ payment.date.strftime('%d/%m/%Y') }}
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- KPI Cards -->
+        <div class="row mb-4 position-relative" style="z-index: 1;">
+            <div class="col text-center border-right">
+                <small class="text-muted text-uppercase font-weight-bold">Atendimentos</small>
+                <div class="h4 font-weight-bold text-primary">{{ payment.sales|length }}</div>
+            </div>
+
+            {% if mode == 'admin' %}
+            <div class="col text-center border-right">
+                <small class="text-muted text-uppercase font-weight-bold">Faturamento</small>
+                {% set total_fat = payment.sales | sum(attribute='total_amount') %}
+                <div class="h4 font-weight-bold text-dark">R$ {{ "%.2f"|format(total_fat) }}</div>
+            </div>
+            {% endif %}
+
+            <div class="col text-center">
+                <small class="text-muted text-uppercase font-weight-bold">Comissão Total</small>
+                <div class="h4 font-weight-bold text-success">R$ {{ "%.2f"|format(payment.total_commission) }}</div>
+            </div>
+        </div>
+
+        <!-- Main Table -->
+        <h6 class="text-uppercase text-secondary font-weight-bold mb-3 small">Detalhamento dos Serviços/Produtos</h6>
+        <div class="table-responsive mb-4 position-relative" style="z-index: 1;">
+            <table class="table table-custom table-hover table-striped">
+                <thead>
+                    <tr>
+                        <th style="width: 15%">Data</th>
+                        <th style="width: 25%">Cliente</th>
+                        <th style="width: 30%">Item</th>
+
+                        {% if mode == 'admin' %}
+                        <th class="text-right" style="width: 15%">Bruto</th>
+                        {% endif %}
+
+                        <th class="text-right" style="width: 15%">Comissão</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% set ns = namespace(total_services=0, total_products=0) %}
+                    {% for sale in payment.sales %}
+                    {% for item in sale.items %}
+                    {% if item.product_id %}{% set ns.total_products = ns.total_products + 1 %}{% else %}{% set
+                    ns.total_services = ns.total_services + 1 %}{% endif %}
+                    <tr>
+                        <td>{{ sale.date.strftime('%d/%m') }}</td>
+                        <td>{{ sale.client_name or '-' }}</td>
+                        <td>
+                            {{ item.item_name }}
+                            {% if item.product_id %}<span class="badge-prod">PROD</span>{% endif %}
+                        </td>
+
+                        {% if mode == 'admin' %}
+                        <td class="text-right text-muted">R$ {{ "%.2f"|format(item.price) }}</td>
+                        {% endif %}
+
+                        <td class="text-right font-weight-bold text-success">R$ {{ "%.2f"|format(item.commission) }}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Discounts Section -->
+        {% if payment.advances %}
+        <h6 class="mt-4 mb-3 text-uppercase text-danger font-weight-bold small">Descontos / Vales / Permutas</h6>
+        <div class="table-responsive mb-4">
+            <table class="table table-custom table-sm bg-light text-danger">
+                <thead>
+                    <tr>
+                        <th class="text-danger">Data</th>
+                        <th class="text-danger">Descrição</th>
+                        <th class="text-right text-danger">Valor Descontado</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for adv in payment.advances %}
+                    <tr>
+                        <td>{{ adv.date.strftime('%d/%m') }}</td>
+                        <td>{{ adv.description }}</td>
+                        <td class="text-right">- R$ {{ "%.2f"|format(adv.amount) }}</td>
+                    </tr>
+                    {% endfor %}
+                    <tr class="font-weight-bold border-top box-shadow">
+                        <td colspan="2" class="text-right text-uppercase">Total Descontos</td>
+                        <td class="text-right">- R$ {{ "%.2f"|format(payment.total_advances) }}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        {% endif %}
+
+        <!-- Footer Totals -->
+        <div class="row justify-content-end mt-5">
+            <div class="col-md-6">
+                <table class="table table-sm table-borderless">
+                    <!-- Profitability for Admin -->
+                    {% if mode == 'admin' %}
+                    {% set total_fat = payment.sales | sum(attribute='total_amount') %}
+                    {% set profit = total_fat - payment.total_commission %}
+                    <tr class="border-bottom text-muted">
+                        <td>Faturamento Loja</td>
+                        <td class="text-right">R$ {{ "%.2f"|format(total_fat) }}</td>
+                    </tr>
+                    <tr class="border-bottom text-primary font-weight-bold">
+                        <td>Lucro da Barbearia</td>
+                        <td class="text-right">R$ {{ "%.2f"|format(profit) }}</td>
+                    </tr>
+                    <tr>
+                        <td colspan="2">&nbsp;</td>
+                    </tr>
+                    {% endif %}
+
+                    <!-- Pay Totals -->
+                    <tr>
+                        <td>Total Comissões</td>
+                        <td class="text-right font-weight-bold text-success">R$ {{
+                            "%.2f"|format(payment.total_commission) }}</td>
+                    </tr>
+                    {% if payment.total_advances > 0 %}
+                    <tr>
+                        <td class="text-danger">(-) Vales e Descontos</td>
+                        <td class="text-right font-weight-bold text-danger">- R$ {{
+                            "%.2f"|format(payment.total_advances) }}</td>
+                    </tr>
+                    {% endif %}
+                    <tr class="border-top mt-2" style="border-top-width: 2px !important;">
+                        <td class="pt-3 h5 text-dark font-weight-bold">LÍQUIDO A RECEBER</td>
+                        <td class="pt-3 h3 text-success text-right font-weight-bold">R$ {{
+                            "%.2f"|format(payment.net_amount) }}</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+
+        <div class="text-center mt-5 mb-3 btn-print no-print">
+            <button onclick="window.print()" class="btn btn-dark btn-lg px-5 shadow-sm">
+                <i class="fas fa-print mr-2"></i> Imprimir / Salvar PDF
+            </button>
+            <button onclick="window.close()" class="btn btn-outline-secondary btn-lg ml-2">Fechar</button>
+        </div>
+
+    </div>
+
+</body>
+
+</html>

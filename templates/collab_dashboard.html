@@ -1,0 +1,117 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="dashboard-header text-center">
+    <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Barbearia JoeFelipe"
+        style="width: 200px; height: auto; border-radius: 50%;" class="mb-3">
+    <h2 class="text-center">Olá, {{ collaborator.name }}</h2>
+    <p class="text-center text-muted">Barbearia JoeFelipe</p>
+</div>
+
+<div class="actions mt-2">
+    <a href="{{ url_for('main.new_sale') }}" class="btn btn-add">
+        <i class="fas fa-plus-circle"></i> Nova Venda
+    </a>
+</div>
+
+<div class="row">
+    <div class="col-md-4 mb-2">
+        <div class="card stat-card text-center p-3">
+            <h5 class="text-muted">A Receber</h5>
+            <div class="stat-value text-success display-4">R$ {{ "%.2f"|format(current_balance) }}</div>
+            <small class="text-muted d-block mt-1">Acumulado da Semana</small>
+            {% if total_paid > 0 %}
+            <a href="{{ url_for('main.my_receipts') }}" class="btn btn-outline-info btn-sm mt-2">
+                <i class="fas fa-file-invoice-dollar"></i> Ver Comprovantes
+            </a>
+            {% endif %}
+        </div>
+    </div>
+    <div class="col-md-4 mb-2">
+        <div class="card stat-card text-center p-3">
+            <h5 class="text-muted">Total Pago</h5>
+            <div class="stat-value text-primary">R$ {{ "%.2f"|format(total_paid) }}</div>
+            <small class="text-muted">Já Recebido</small>
+        </div>
+    </div>
+    <div class="col-md-4 mb-2">
+        <div class="card stat-card text-center p-3">
+            <h5 class="text-muted">Total Acumulado</h5>
+            <div class="stat-value text-dark">R$ {{ "%.2f"|format(total_commission) }}</div>
+            <small class="text-muted">Desde o início</small>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.getElementById('reset-commissions-btn')?.addEventListener('click', function () {
+        if (!confirm('Tem certeza que deseja marcar todas as comissões pendentes como PAGAS? Isso irá resetar o saldo atual.')) return;
+
+        fetch('{{ url_for("main.reset_commissions") }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Comissões resetadas com sucesso!');
+                    location.reload();
+                } else {
+                    alert('Erro: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Erro ao processar solicitação.');
+            });
+    });
+</script>
+
+
+
+<div class="card">
+    <h3><i class="fas fa-history"></i> Histórico Recente</h3>
+    <div class="list-group">
+        {% for sale in recent_sales %}
+        <div class="list-group-item">
+            <div>
+                <div class="item-main">{{ sale.date.strftime('%d/%m %H:%M') }}</div>
+                <div class="item-sub">
+                    {% for item in sale.items %}
+                    {{ item.item_name }}{% if not loop.last %}, {% endif %}
+                    {% endfor %}
+                </div>
+                {% if sale.client_name %}
+                <div class="item-sub text-muted"><i class="fas fa-user"></i> {{ sale.client_name }}</div>
+                {% endif %}
+                <div class="item-sub text-muted"><i class="fas fa-wallet"></i> {{ sale.payment_method }}</div>
+            </div>
+            <div class="text-right">
+                <!-- Removed Total Amount (Revenue) as requested -->
+                <div class="item-main text-success">Comissão: + R$ {{ "%.2f"|format(sale.total_commission) }}</div>
+            </div>
+        </div>
+        <div class="list-group-item bg-light p-2" style="font-size: 0.85em;">
+            <strong>Itens:</strong>
+            <ul class="pl-3 mb-0">
+                {% for item in sale.items %}
+                <li>
+                    {{ item.item_name }}
+                    <span class="text-muted">- Comis: R$ {{ "%.2f"|format(item.commission) }}</span>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+        {% else %}
+        <p class="text-muted text-center">Nenhuma venda registrada.</p>
+        {% endfor %}
+    </div>
+</div>
+
+<div class="text-center mt-2">
+    <a href="{{ url_for('main.logout') }}" class="btn btn-secondary"
+        style="width: auto; display: inline-block;">Sair</a>
+</div>
+{% endblock %}

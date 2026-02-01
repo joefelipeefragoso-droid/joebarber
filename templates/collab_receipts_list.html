@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="test-receipts-container mt-4">
+    <h3 class="text-center mb-4">Meus Comprovantes</h3>
+
+    <div class="list-group">
+        {% for payment in payments %}
+        <a href="{{ url_for('main.receipt_detail', id=payment.id) }}" target="_blank"
+            class="list-group-item list-group-item-action flex-column align-items-start">
+            <div class="d-flex w-100 justify-content-between">
+                <h5 class="mb-1">Comissão: R$ {{ "%.2f"|format(payment.net_amount) }}</h5>
+                <small>{{ payment.date.strftime('%d/%m/%Y') }}</small>
+            </div>
+            <p class="mb-1">Período: {{ payment.start_date.strftime('%d/%m') }} a {{ payment.end_date.strftime('%d/%m')
+                }}</p>
+            <small class="text-muted">Gerado por: {{ payment.admin_name }}</small>
+        </a>
+        {% else %}
+        <div class="alert alert-info text-center">Nenhum comprovante encontrado.</div>
+        {% endfor %}
+    </div>
+
+    <div class="text-center mt-3">
+        <a href="{{ url_for('main.dashboard') }}" class="btn btn-secondary">Voltar ao Painel</a>
+    </div>
+</div>
+{% endblock %}

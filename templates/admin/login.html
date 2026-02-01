@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="row justify-content-center mt-5">
+    <div class="col-md-5">
+        <div class="card shadow-lg border-0 rounded-lg">
+            <div class="card-header bg-success text-white text-center py-4">
+                <i class="fas fa-lock fa-3x mb-2"></i>
+                <h3 class="mb-0">Acesso Administrativo</h3>
+                <p class="small mb-0 text-white-50">Barbearia JoeFelipe</p>
+            </div>
+            <div class="card-body p-5">
+                <form method="POST">
+                    <div class="form-group mb-4">
+                        <label for="password" class="text-muted text-uppercase small font-weight-bold">Senha do
+                            Proprietário</label>
+                        <div class="input-group input-group-lg">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text bg-light border-right-0"><i
+                                        class="fas fa-key text-success"></i></span>
+                            </div>
+                            <input type="password" class="form-control border-left-0 bg-light" id="password"
+                                name="password" placeholder="Digite sua senha segura" required autofocus>
+                        </div>
+                    </div>
+                    <button type="submit"
+                        class="btn btn-success btn-lg btn-block shadow-sm font-weight-bold rounded-pill">
+                        ENTRAR <i class="fas fa-arrow-right ml-2"></i>
+                    </button>
+                </form>
+            </div>
+            <div class="card-footer text-center py-3 bg-light border-0">
+                <a href="{{ url_for('main.index') }}" class="small text-muted">Voltar para Início</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

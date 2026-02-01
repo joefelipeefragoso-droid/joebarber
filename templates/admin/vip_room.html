@@ -1,0 +1,168 @@
+{% extends 'admin/master.html' %}
+
+{% block head %}
+{{ super() }}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css">
+<style>
+    .vip-card {
+        background: linear-gradient(135deg, #1c1c1c 0%, #333 100%);
+        color: gold;
+        border: 1px solid gold;
+    }
+
+    .text-gold {
+        color: gold !important;
+    }
+
+    .btn-gold {
+        background-color: gold;
+        color: black;
+        font-weight: bold;
+    }
+
+    .btn-gold:hover {
+        background-color: #e6c200;
+        color: black;
+    }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="container-fluid mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4 p-3 rounded"
+        style="background: #000; color: white;">
+        <h1 class="h3 mb-0"><i class="fas fa-crown text-gold"></i> Sala VIP - {{ owner.name }}</h1>
+        <div class="text-right">
+            <small class="text-gray-400">Faturamento Hoje</small>
+            <div class="h4 text-gold mb-0">R$ {{ "%.2f"|format(today_total) }}</div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- New Sale Form -->
+        <div class="col-lg-5">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 bg-dark text-white">
+                    <h6 class="m-0 font-weight-bold text-gold">Novo Atendimento VIP</h6>
+                </div>
+                <div class="card-body">
+                    <form method="POST">
+                        <div class="form-group">
+                            <label>O que foi realizado?</label>
+                            <select name="selector" id="itemSelector" class="form-control" required>
+                                <option value="" disabled selected>Selecione...</option>
+                                <optgroup label="Serviços">
+                                    {% for svc in services %}
+                                    <option value="service|{{ svc.id }}|{{ svc.price }}">{{ svc.name }} - R$ {{
+                                        svc.price }}</option>
+                                    {% endfor %}
+                                </optgroup>
+                                <optgroup label="Produtos">
+                                    {% for prod in products %}
+                                    <option value="product|{{ prod.id }}|{{ prod.price }}">{{ prod.name }} - R$ {{
+                                        prod.price }}</option>
+                                    {% endfor %}
+                                </optgroup>
+                            </select>
+                        </div>
+
+                        <!-- Hidden inputs populated by JS -->
+                        <input type="hidden" name="type" id="inputType">
+                        <input type="hidden" name="item_id" id="inputId">
+
+                        <div class="form-group">
+                            <label>Valor (R$)</label>
+                            <input type="number" step="0.01" name="price" id="inputPrice" class="form-control" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Nome do Cliente (Opcional)</label>
+                            <input type="text" name="client_name" class="form-control">
+                        </div>
+
+                        <div class="form-group">
+                            <label>Forma de Pagamento</label>
+                            <div class="btn-group btn-group-toggle w-100" data-toggle="buttons">
+                                <label class="btn btn-outline-dark active">
+                                    <input type="radio" name="payment_method" value="Dinheiro" checked> Dinheiro
+                                </label>
+                                <label class="btn btn-outline-dark">
+                                    <input type="radio" name="payment_method" value="Pix"> Pix
+                                </label>
+                                <label class="btn btn-outline-dark">
+                                    <input type="radio" name="payment_method" value="Débito"> Débito
+                                </label>
+                                <label class="btn btn-outline-dark">
+                                    <input type="radio" name="payment_method" value="Crédito"> Crédito
+                                </label>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-gold btn-block btn-lg mt-4">
+                            <i class="fas fa-check"></i> Registrar VIP
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Activity Column -->
+        <div class="col-lg-7">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Atendimentos Recentes (VIP)</h6>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Data</th>
+                                    <th>Item</th>
+                                    <th>Cliente</th>
+                                    <th>Valor</th>
+                                    <th>Método</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for sale in recent %}
+                                <tr>
+                                    <td>{{ sale.date.strftime('%d/%m %H:%M') }}</td>
+                                    <td>
+                                        {% for item in sale.items %}
+                                        {{ item.item_name }}<br>
+                                        {% endfor %}
+                                    </td>
+                                    <td>{{ sale.client_name or '-' }}</td>
+                                    <td>R$ {{ "%.2f"|format(sale.total_amount) }}</td>
+                                    <td><span class="badge badge-secondary">{{ sale.payment_method }}</span></td>
+                                </tr>
+                                {% else %}
+                                <tr>
+                                    <td colspan="5" class="text-center text-muted">Nenhum registro recente.</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+<script>
+    $(document).ready(function () {
+        $('#itemSelector').change(function () {
+            var val = $(this).val();
+            if (val) {
+                var parts = val.split('|');
+                $('#inputType').val(parts[0]);
+                $('#inputId').val(parts[1]);
+                $('#inputPrice').val(parts[2]);
+            }
+        });
+    });
+</script>
+{% endblock %}

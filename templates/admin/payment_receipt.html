@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Nota de Pagamento - {{ payment.collaborator.name }}</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <style>
+        body {
+            background: #f8f9fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .receipt-container {
+            max-width: 800px;
+            margin: 40px auto;
+            background: #fff;
+            padding: 40px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.05);
+            border-radius: 8px;
+        }
+
+        .header-brand {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .header-sub {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .info-box {
+            background: #f8f9fa;
+            border-radius: 6px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+
+        .table-custom th {
+            background: #f1f3f5;
+            font-weight: 600;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            border-top: none;
+        }
+
+        .table-custom td {
+            vertical-align: middle;
+            font-size: 0.95rem;
+        }
+
+        .total-row td {
+            font-weight: bold;
+            font-size: 1.1rem;
+            border-top: 2px solid #dee2e6;
+        }
+
+        .signature-section {
+            margin-top: 60px;
+        }
+
+        .signature-line {
+            border-top: 1px solid #333;
+            width: 60%;
+            margin: 0 auto 10px auto;
+        }
+
+        @media print {
+            body {
+                background: #fff;
+            }
+
+            .receipt-container {
+                box-shadow: none;
+                margin: 0;
+                max-width: 100%;
+                border-radius: 0;
+                padding: 20px;
+            }
+
+            .btn-print {
+                display: none !important;
+            }
+
+            .no-print {
+                display: none !important;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="receipt-container">
+        <!-- Header -->
+        <div class="row mb-4 border-bottom pb-3 align-items-center">
+            <div class="col-8">
+                <div class="header-brand"><i class="fas fa-cut mr-2"></i> Barbearia JoeFelipe</div>
+                <div class="header-sub">Comprovante de Pagamento de Comissão</div>
+            </div>
+            <div class="col-4 text-right">
+                <span class="badge badge-dark px-3 py-2" style="font-size: 0.9rem;">Nº {{ "%04d"|format(payment.id)
+                    }}</span>
+            </div>
+        </div>
+
+        <!-- Info Grid -->
+        <div class="row mb-2">
+            <div class="col-md-6">
+                <div class="info-box">
+                    <small class="text-uppercase text-muted font-weight-bold">Colaborador</small>
+                    <div class="h5 mb-0 text-dark">{{ payment.collaborator.name }}</div>
+                    <div class="small mt-1 text-muted">{{ payment.collaborator.phone }}</div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="info-box">
+                    <small class="text-uppercase text-muted font-weight-bold">Período de Referência</small>
+                    <div class="h5 mb-0 text-dark">
+                        {% if payment.start_date %}
+                        {{ payment.start_date.strftime('%d/%m/%Y') }} a {{ payment.end_date.strftime('%d/%m/%Y') }}
+                        {% else %}
+                        Até {{ payment.date.strftime('%d/%m/%Y') }}
+                        {% endif %}
+                    </div>
+                    <div class="small mt-1 text-muted">Pago em: {{ payment.date.strftime('%d/%m/%Y às %H:%M') }}</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Summary Cards -->
+        <div class="row mb-4">
+            <div class="col-4 text-center border-right">
+                <small class="text-muted text-uppercase font-weight-bold">Atendimentos</small>
+                <div class="h4 font-weight-bold text-primary">{{ payment.sales|length }}</div>
+            </div>
+            <div class="col-4 text-center border-right">
+                <small class="text-muted text-uppercase font-weight-bold">Faturamento Total</small>
+                {% set total_fat = payment.sales | sum(attribute='total_amount') %}
+                <div class="h4 font-weight-bold text-dark">R$ {{ "%.2f"|format(total_fat) }}</div>
+            </div>
+            <div class="col-4 text-center">
+                <small class="text-muted text-uppercase font-weight-bold">Sua Comissão</small>
+                <div class="h4 font-weight-bold text-success">R$ {{ "%.2f"|format(payment.total_commission) }}</div>
+            </div>
+        </div>
+
+        <!-- Detailed Table -->
+        <h6 class="section-title text-uppercase text-secondary font-weight-bold mb-3 small">Detalhamento dos Serviços
+        </h6>
+        <div class="table-responsive mb-4">
+            <table class="table table-custom table-hover table-striped">
+                <thead>
+                    <tr>
+                        <th style="width: 15%">Data</th>
+                        <th style="width: 30%">Cliente</th>
+                        <th style="width: 30%">Serviços/Produtos</th>
+                        <th class="text-right" style="width: 15%">Valor</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for sale in payment.sales %}
+                    <tr>
+                        <td>{{ sale.date.strftime('%d/%m %H:%M') }}</td>
+                        <td class="font-weight-bold">{{ sale.client_name or 'Cliente Avulso' }}</td>
+                        <td>
+                            <small class="d-block text-muted" style="line-height: 1.2;">
+                                {% for item in sale.items %}
+                                {{ item.item_name }}{% if not loop.last %}, {% endif %}
+                                {% endfor %}
+                            </small>
+                        </td>
+                        <td class="text-right text-dark">R$ {{ "%.2f"|format(sale.total_amount) }}</td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="4" class="text-center py-3 text-muted">
+                            <em>Nenhum detalhe disponível (vendas anteriores à atualização do sistema).</em>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Final Calculation -->
+        <div class="row justify-content-end">
+            <div class="col-md-6">
+                <table class="table table-sm table-borderless">
+                    <tr>
+                        <td class="text-muted">Total Comissões (+)</td>
+                        <td class="text-right font-weight-bold">R$ {{ "%.2f"|format(payment.total_commission) }}</td>
+                    </tr>
+                    {% if payment.total_advances > 0 %}
+                    <tr>
+                        <td class="text-danger">Adiantamentos/Vales (-)</td>
+                        <td class="text-right text-danger font-weight-bold">- R$ {{
+                            "%.2f"|format(payment.total_advances) }}</td>
+                    </tr>
+                    {% endif %}
+                    <tr class="border-top mt-2">
+                        <td class="pt-3 font-weight-bold h5 text-dark">Líquido a Receber</td>
+                        <td class="pt-3 font-weight-bold h3 text-success text-right">R$ {{
+                            "%.2f"|format(payment.net_amount) }}</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+
+        <!-- Signature -->
+        <div class="signature-section text-center row">
+            <div class="col-6">
+                <div class="signature-line"></div>
+                <small class="text-muted d-block text-uppercase">Barbearia JoeFelipe</small>
+                <small class="text-muted">Administrador</small>
+            </div>
+            <div class="col-6">
+                <div class="signature-line"></div>
+                <small class="text-muted d-block text-uppercase">{{ payment.collaborator.name }}</small>
+                <small class="text-muted">Colaborador</small>
+            </div>
+        </div>
+
+        <div class="text-center mt-5 mb-3 btn-print">
+            <button onclick="window.print()" class="btn btn-dark btn-lg px-5 shadow-sm">
+                <i class="fas fa-print mr-2"></i> Imprimir / Salvar PDF
+            </button>
+            <button onclick="window.close()" class="btn btn-outline-secondary btn-lg ml-2">Fechar</button>
+        </div>
+    </div>
+
+</body>
+
+</html>

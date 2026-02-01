@@ -1,0 +1,151 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="header">
+    <a href="{{ url_for('main.dashboard') }}" class="text-muted"><i class="fas fa-arrow-left"></i> Voltar</a>
+    <h2 class="mt-2 text-center">Nova Venda</h2>
+</div>
+
+<div class="card">
+    <h3>Serviços</h3>
+    <div class="form-group">
+        <select id="service-select">
+            <option value="">Selecione um serviço...</option>
+            {% for s in services %}
+            <option value="{{ s.id }}" data-price="{{ s.price }}" data-type="service">{{ s.name }} - R$ {{
+                "%.2f"|format(s.price) }}</option>
+            {% endfor %}
+        </select>
+        <button class="btn btn-secondary" onclick="addItem('service')">Adicionar Serviço</button>
+    </div>
+</div>
+
+<div class="card">
+    <h3>Produtos</h3>
+    <div class="form-group">
+        <select id="product-select">
+            <option value="">Selecione um produto...</option>
+            {% for p in products %}
+            <option value="{{ p.id }}" data-price="{{ p.price }}" data-type="product">{{ p.name }} - R$ {{
+                "%.2f"|format(p.price) }}</option>
+            {% endfor %}
+        </select>
+        <button class="btn btn-secondary" onclick="addItem('product')">Adicionar Produto</button>
+    </div>
+</div>
+
+<div class="card">
+    <h3>Resumo</h3>
+    <div id="items-list" class="list-group">
+        <!-- JS will populate -->
+    </div>
+    <div class="list-group-item mt-2" style="border-top: 1px solid #444; border-bottom: none;">
+        <div class="item-main">Total</div>
+        <div class="item-main" style="font-size: 1.2rem; color: var(--primary);">R$ <span id="total-display">0.00</span>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <h3>Dados do Cliente</h3>
+    <div class="form-group">
+        <label for="client-name">Nome do Cliente (Opcional)</label>
+        <input type="text" id="client-name" class="form-control" placeholder="Ex: João Silva"
+            style="width: 100%; padding: 10px; margin-bottom: 15px;">
+
+        <label for="payment-method">Forma de Pagamento</label>
+        <select id="payment-method" style="width: 100%; padding: 10px;">
+            <option value="Dinheiro">Dinheiro</option>
+            <option value="Pix">Pix</option>
+            <option value="Crédito">Cartão de Crédito</option>
+            <option value="Débito">Cartão de Débito</option>
+        </select>
+    </div>
+</div>
+
+<button class="btn btn-add" onclick="submitSale()">Confirmar Venda</button>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+    let cart = [];
+
+    function addItem(type) {
+        const selectId = type === 'service' ? 'service-select' : 'product-select';
+        const select = document.getElementById(selectId);
+        const option = select.options[select.selectedIndex];
+
+        if (!option.value) return;
+
+        const item = {
+            id: option.value,
+            name: option.text.split(' - ')[0],
+            price: parseFloat(option.getAttribute('data-price')),
+            type: type
+        };
+
+        cart.push(item);
+        renderCart();
+        select.selectedIndex = 0; // Reset select
+    }
+
+    function removeItem(index) {
+        cart.splice(index, 1);
+        renderCart();
+    }
+
+    function renderCart() {
+        const list = document.getElementById('items-list');
+        const totalDisplay = document.getElementById('total-display');
+
+        list.innerHTML = '';
+        let total = 0;
+
+        cart.forEach((item, index) => {
+            total += item.price;
+            const div = document.createElement('div');
+            div.className = 'list-group-item';
+            div.innerHTML = `
+                <div>${item.name}</div>
+                <div style="display:flex; align-items:center; gap:10px;">
+                    R$ ${item.price.toFixed(2)}
+                    <i class="fas fa-trash text-danger" style="cursor:pointer;" onclick="removeItem(${index})"></i>
+                </div>
+            `;
+            list.appendChild(div);
+        });
+
+        totalDisplay.innerText = total.toFixed(2);
+    }
+
+    function submitSale() {
+        if (cart.length === 0) {
+            alert('Adicione pelo menos um item.');
+            return;
+        }
+
+        const clientName = document.getElementById('client-name').value;
+        const paymentMethod = document.getElementById('payment-method').value;
+
+        $.ajax({
+            url: "{{ url_for('main.new_sale') }}",
+            type: "POST",
+            contentType: "application/json",
+            data: JSON.stringify({
+                items: cart,
+                client_name: clientName,
+                payment_method: paymentMethod
+            }),
+            success: function (response) {
+                if (response.success) {
+                    window.location.href = response.redirect;
+                }
+            },
+            error: function () {
+                alert('Erro ao salvar venda.');
+            }
+        });
+    }
+</script>
+{% endblock %}

@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="card text-center mt-5">
+    <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Barbearia JoeFelipe"
+        style="width: 1500px; height: auto; margin: 0 auto;" class="mb-3">
+    <h1>Barbearia JoeFelipe</h1>
+    <p class="lead text-muted mt-3">Sistema completo da Barbearia JoeFelipe, incluindo serviços, colaboradores e visão
+        geral da empresa.</p>
+
+    <div class="mt-4">
+        <p>Para começar:</p>
+        <div class="d-flex justify-content-center gap-3">
+            <a href="/admin" class="btn btn-primary">
+                <i class="fas fa-user-shield"></i> Acessar Painel Admin
+            </a>
+        </div>
+        <div class="alert alert-info mt-4" style="text-align: left; max-width: 600px; margin: 20px auto;">
+            <h5><i class="fas fa-info-circle"></i> Como acessar a Área de Vendas?</h5>
+            <p>A área de vendas é exlusiva para colaboradores.</p>
+            <ol>
+                <li>Acesse o <strong>Painel Admin</strong>.</li>
+                <li>Vá em <strong>Colaboradores</strong>.</li>
+                <li>Copie o seu <strong>Token</strong>.</li>
+                <li>Use o link: <code>http://localhost:5000/login/SEU_TOKEN</code></li>
+            </ol>
+        </div>
+    </div>
+</div>
+{% endblock %}

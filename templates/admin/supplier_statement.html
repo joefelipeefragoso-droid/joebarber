@@ -1,0 +1,95 @@
+{% extends 'admin/master.html' %}
+
+{% block body %}
+<div class="row">
+    <div class="col-md-12">
+        <h2 class="mb-4">Extrato do Fornecedor: <span class="text-primary">{{ supplier.name }}</span></h2>
+
+        <div class="row">
+            <div class="col-md-4">
+                <div class="card text-white bg-secondary mb-3">
+                    <div class="card-header">Dívida Inicial</div>
+                    <div class="card-body">
+                        <h4 class="card-title">R$ {{ "%.2f"|format(supplier.initial_debt) }}</h4>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card text-white bg-danger mb-3">
+                    <div class="card-header">Saldo Devedor Atual</div>
+                    <div class="card-body">
+                        <h4 class="card-title">R$ {{ "%.2f"|format(supplier.current_balance) }}</h4>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <h3 class="mt-4">Histórico</h3>
+        <ul class="nav nav-tabs" id="myTab" role="tablist">
+            <li class="nav-item">
+                <a class="nav-link active" id="products-tab" data-toggle="tab" href="#products" role="tab">Produtos
+                    Recebidos</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" id="payments-tab" data-toggle="tab" href="#payments" role="tab">Pagamentos
+                    Realizados</a>
+            </li>
+        </ul>
+
+        <div class="tab-content" id="myTabContent">
+            <!-- Products Tab -->
+            <div class="tab-pane fade show active p-3 bg-white border border-top-0" id="products" role="tabpanel">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Produto</th>
+                            <th>Custo (Aumenta Dívida)</th>
+                            <th>Preço Venda</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for product in supplier.products %}
+                        <tr>
+                            <td>{{ product.name }}</td>
+                            <td class="text-danger font-weight-bold">+ R$ {{ "%.2f"|format(product.cost_price) }}</td>
+                            <td>R$ {{ "%.2f"|format(product.price) }}</td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="3">Nenhum produto registrado.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Payments Tab -->
+            <div class="tab-pane fade p-3 bg-white border border-top-0" id="payments" role="tabpanel">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Data</th>
+                            <th>Descrição</th>
+                            <th>Valor Pago (Abate Dívida)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for payment in supplier.payments %}
+                        <tr>
+                            <td>{{ payment.date.strftime('%d/%m/%Y %H:%M') }}</td>
+                            <td>{{ payment.description or '-' }}</td>
+                            <td class="text-success font-weight-bold">- R$ {{ "%.2f"|format(payment.amount) }}</td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="3">Nenhum pagamento registrado.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+</div>
+{% endblock %}
