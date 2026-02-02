@@ -7,30 +7,15 @@ main_bp = Blueprint('main', __name__)
 
 @main_bp.route('/')
 def index():
-    return render_template('index.html')
+    return "TESTING ANTIGRAVITY CONTROL"
+    # return render_template('index.html')
 
 @main_bp.route('/admin/login', methods=['GET', 'POST'])
 def admin_login():
-    if request.method == 'POST':
-        password = request.form.get('password')
-        # Check against any Collaborator marked as Owner
-        owners = Collaborator.query.filter_by(is_owner=True).all()
-        
-        authorized = False
-        for owner in owners:
-            if owner.check_password(password):
-                session['admin_logged_in'] = True
-                session['admin_name'] = owner.name
-                flash(f'Bem-vindo, {owner.name}!', 'success')
-                authorized = True
-                break
-        
-        if authorized:
-            return redirect(url_for('dashboard.index'))
-        else:
-            flash('Acesso negado. Senha incorreta ou nenhum proprietário configurado.', 'danger')
-
-    return render_template('admin/login.html')
+    # AUTO-LOGIN (Security Removed by User Request)
+    session['admin_logged_in'] = True
+    session['admin_name'] = "Administrador"
+    return redirect(url_for('dashboard.index'))
 
 
 @main_bp.route('/login/<token>', methods=['GET', 'POST'])

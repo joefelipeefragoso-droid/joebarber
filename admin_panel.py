@@ -9,14 +9,14 @@ from datetime import datetime, timedelta
 
 class SecureModelView(ModelView):
     def is_accessible(self):
-        return session.get('admin_logged_in') == True
+        return True # SECURITY REMOVED
 
     def inaccessible_callback(self, name, **kwargs):
         return redirect(url_for('main.admin_login'))
 
 class SecureBaseView(BaseView):
     def is_accessible(self):
-        return session.get('admin_logged_in') == True
+        return True # SECURITY REMOVED
 
     def inaccessible_callback(self, name, **kwargs):
         return redirect(url_for('main.admin_login'))
@@ -59,17 +59,18 @@ class CollaboratorView(SecureModelView):
         
         if form.password.data:
             # Security Check for Owner/Admin
-            if model.is_owner:
-                 import re
-                 pwd = form.password.data
-                 if len(pwd) < 8:
-                     raise ValueError('Senha muito curta. Mínimo 8 caracteres para administradores.')
-                 if not re.search(r"[A-Z]", pwd):
-                     raise ValueError('Senha deve conter letra Maiúscula.')
-                 if not re.search(r"\d", pwd):
-                     raise ValueError('Senha deve conter número.')
-                 if not re.search(r"[!@#$%^&*(),.?\":{}|<>]", pwd):
-                     raise ValueError('Senha deve conter caractere especial.')
+            # Security Check for Owner/Admin VALIDATION REMOVED
+            # if model.is_owner:
+            #      import re
+            #      pwd = form.password.data
+            #      if len(pwd) < 8:
+            #          raise ValueError('Senha muito curta. Mínimo 8 caracteres para administradores.')
+            #      if not re.search(r"[A-Z]", pwd):
+            #          raise ValueError('Senha deve conter letra Maiúscula.')
+            #      if not re.search(r"\d", pwd):
+            #          raise ValueError('Senha deve conter número.')
+            #      if not re.search(r"[!@#$%^&*(),.?\":{}|<>]", pwd):
+            #          raise ValueError('Senha deve conter caractere especial.')
 
             model.set_password(form.password.data)
             
